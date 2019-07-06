@@ -1,6 +1,8 @@
 package point;
 
 import javax.persistence.*;
+import javax.persistence.criteria.From;
+
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -15,6 +17,9 @@ public class Main {
         EntityManagerFactory emf =
                 Persistence.createEntityManagerFactory("jpa-example");
         EntityManager em = emf.createEntityManager();
+        
+        
+        /*
         Hersteller hersteller = new Hersteller();
         hersteller.setId(1L);
         hersteller.setHerstellerName("Siemens");
@@ -69,15 +74,54 @@ public class Main {
         em.persist(konto100);
         em.persist(konto200);
         em.persist(konto300);
+*/        em.getTransaction().begin();
+
+        Vehicle vehicle = new Vehicle();
+        Vehicle vehicle2 = new Vehicle();
+        Person person = new Person();
+        Person person2 = new Person();
+        Person person3 = new Person();
+        person3.setId(3L);
+        person3.setName("Selin");
+        person.setId(1L);
+        person2.setId(2L);
+        person.setName("Müller");
+        person2.setName("Mustermann");
+
+        vehicle.setId(1L);
+        vehicle.setLicensePlateNumber("F-FH 8");
+        vehicle2.setId(2L);
+
+        vehicle2.setLicensePlateNumber("F-FH 4");
+        vehicle2.setVehicleOwner(person2);
+
+
+        vehicle.setVehicleOwner(person);
+        
+        em.persist(vehicle);
+        em.persist(vehicle2);
+        em.persist(person);
+        em.persist(person2);
+        em.persist(person3);
+
+
 
 
         em.getTransaction().commit();
 
         em.getTransaction().begin();
-        List resultList = em.createQuery("SELECT h.herstellerName FROM Hersteller h").getResultList();
+        String query = "SELECT h.herstellerName FROM Hersteller h";
+        //SELECT p.ownedVehicle FROM Person p, Vehicle v WHERE p.name = 'Müller'
+        String owner ="Mustermann";
+        List resultList = em.createQuery(
+                //SELECT p.name, Count(v.vehicleOwner_id) as anzahl
+                //From Person p, Vehicle v
+                //WHERE p.id = v.vehicleOwner_id
+                //group by p.name
 
+                "SELECT p.name, COUNT(v.vehicleOwner) FROM Person p, Vehicle v WHERE p.id = v.vehicleOwner.id GROUP BY p.name").getResultList();
+         System.out.println("jetzt sql statement ausgbae");
         if (!resultList.isEmpty()) {
-            System.out.println("ID" + "\t" + "HerstellerName");
 
             for(int i = 0;i<resultList.size();i++)
             {
